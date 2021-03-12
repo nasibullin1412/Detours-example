@@ -131,7 +131,9 @@ int main(int argc, char* argv[])
     }
     LAB2_PRINT("\nInjection success");
     LAB2_PRINT("\nWaiting for remoute thread...");
+
     WaitForSingleObject(remoute_thread_h, -1);
+    while (1);
     LAB2_PRINT("\nComplited!");
     return 0;
 }
