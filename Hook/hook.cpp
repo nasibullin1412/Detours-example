@@ -41,26 +41,16 @@ void deinit()
 
 void sendMsg()
 {
-    if (Connect)
-    {
-        CHAR Msg[512] = { 0 };
-        SYSTEMTIME T;
-        char time[512] = { 0 };
-        GetLocalTime(&T);
-        char buf[512] = { 0 };
-        sprintf_s(buf, "Func: %s Date: %d:%d:%d- Time: %d:%d:%d:%d\n", gFuncName, T.wDay, T.wMonth, T.wYear, T.wHour, T.wMinute, T.wSecond, T.wMilliseconds);
-        send(CSock, buf, strlen(buf), 0);
-        Connect = FALSE;
-    }
-    /*if (time == NULL || strcmp(buf, time))
-    {
-        sprintf_s(time, "Date: %d:%d:%d Time: %d:%d:%d:%d\n", T.wDay, T.wMonth, T.wYear, T.wHour, T.wMinute, T.wSecond, T.wMilliseconds);
-        sprintf_s(Msg, "Func:%s . %s", gFuncName, time);
-        send(CSock, Msg, strlen(Msg), 0);
-    }*/
 
-    //send(CSock, "I'm here\n", 9, 0);
+    CHAR Msg[512] = { 0 };
+    SYSTEMTIME T;
+    char time[512] = { 0 };
+    GetLocalTime(&T);
+    char buf[512] = { 0 };
+    sprintf_s(buf, "Func: %s Date: %d:%d:%d- Time: %d:%d:%d:%d\n", gFuncName, T.wDay, T.wMonth, T.wYear, T.wHour, T.wMinute, T.wSecond, T.wMilliseconds);
+    send(CSock, buf, strlen(buf), 0);
 }
+
 
 
 int Con()
