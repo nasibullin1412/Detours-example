@@ -173,9 +173,11 @@
   <ItemGroup>
     <ClInclude Include="..\include\share.h" />
     <ClInclude Include="inject.h" />
+    <ClInclude Include="mysocket.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inject.cpp" />
+    <ClCompile Include="mysocket.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

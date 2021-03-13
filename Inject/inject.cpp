@@ -95,44 +95,170 @@ void usage()
 }
 
 
-int main(int argc, char* argv[])
+BOOL IsInputCorrect(int argc)
 {
-    LPCTSTR proc_name = TEXT("notepad.exe");
-    LPCTSTR dll_name = TEXT("Hook.dll");
+    if (argc < 5)
+    {
+        LAB2_PRINT("\n[Error]: error args.\n");
+        return FALSE;
+    }
+    if (!IsUserAnAdmin()) {
+        LAB2_PRINT("\n[Error]: need admin privilege\n");
+        return FALSE;
+    }
+    return TRUE;
+}
+
+
+std::string ParseInput(const std::string &name_of_value, std::vector<std::string>& input, size_t idx)
+{
+    if (input[idx] != name_of_value)
+    {
+        return "";
+    }
+    return input[idx + 1];
+}
+
+
+
+DWORD GetProcIdPrep(const 
+    std::string &proc_name)
+{
 
     DWORD procId = 0;
-    HANDLE remoute_thread_h = NULL;
-    TCHAR full_dll_path[MAX_PATH];
 
+
+    wchar_t w_proc_name[myconst::max_length] = { 0 };
+
+
+    MultiByteToWideChar(CP_UTF8, 0, proc_name.c_str(), -1, w_proc_name, proc_name.capacity());
+
+    procId = getProcessID(w_proc_name);
+    if (procId == 0)
+    {
+        LAB2_PRINT("\n[Error]: Unable to find process %s", proc_name);
+        return 0;
+    }
+    return procId;
+}
+
+
+int main(int argc, char* argv[])
+{
+
+    std::string proc_name;
+    std::string proc_pid;
+    std::string hide_file;
+    std::string hide_func;
+
+
+
+
+    if (!IsInputCorrect(argc))
+    {
+        return -1;
+    }
+
+    std::vector<std::string> input;
+    for (int i = 0; i < argc-1; i++)
+    {
+        input.emplace_back(argv[i + 1]);
+    }
+
+
+    std::string temp = ParseInput(myconst::var_name, input, FIRST_ARG);
+
+    if (temp.empty())   
+    {
+        temp = ParseInput(myconst::var_pid, input, FIRST_ARG);
+        if (temp.empty())
+        {
+            LAB2_PRINT("[Error]: FIRST_FLAG error");
+            return -2;
+        }
+        proc_pid = temp;
+    }
+    else
+    {   
+        proc_name = temp;
+    }
+
+    temp.clear();
+
+
+    temp = ParseInput(myconst::var_func, input, SECOND_ARG);
+
+    if (temp.empty())
+    {
+        temp = ParseInput(myconst::var_hide, input, SECOND_ARG);
+        if (temp.empty())
+        {
+            LAB2_PRINT("[Error]: SECOND_FLAG error");
+            return -3;
+        }
+        hide_file = temp;
+
+    }
+    else
+    {
+        hide_func = temp;
+    }
+
+    temp.clear();
+
+
+
+
+
+    LAB2_PRINT("\nStarting...");
+    //LPCTSTR proc_name = TEXT("notepad.exe");
+    DWORD p_id = 0;
+    TCHAR full_dll_path[MAX_PATH];
+    LPCTSTR dll_name = TEXT("Hook.dll");
     memset(full_dll_path, 0, sizeof(full_dll_path));
     if (GetFullPathName(dll_name, sizeof(full_dll_path) / sizeof(TCHAR), full_dll_path, NULL) == 0)
     {
-        LAB2_PRINT("Error");
+        LAB2_PRINT("[Error]: GetFullPathName error 0x%x", GetLastError());
+    }
+    if (proc_pid.empty())
+    {
+        p_id = GetProcIdPrep(proc_name);
+    }
+    else
+    {
+        p_id = atoi(proc_pid.c_str());
     }
 
-    if (argc < 1)
-    {
-        usage();
-        return __LINE__;
-    }
-    LAB2_PRINT("\nStarting...");
+   
 
-    procId = getProcessID(proc_name);
-    if (procId == 0)
-    {
-        LAB2_PRINT("\nERROR: Unable to find process %s", proc_name);
-        return __LINE__;
-    }
-    remoute_thread_h = InjectDllIntoProccess(procId, full_dll_path);
+    SocketServer in(9000, 5);
+    HANDLE remoute_thread_h = NULL;
+
+
+    remoute_thread_h = InjectDllIntoProccess(p_id, full_dll_path);
     if (remoute_thread_h == NULL)
     {
-        LAB2_PRINT("\nERROR: Unable to Inject DLL to prosess %s", proc_name);
+        LAB2_PRINT("\nERROR: Unable to Inject DLL to prosess %s", proc_name.c_str());
         return __LINE__;
     }
     LAB2_PRINT("\nInjection success");
     LAB2_PRINT("\nWaiting for remoute thread...");
 
+    Socket* sock = in.Accept();
+
+    std::string hello_massage = sock->ReceiveBytes();
+    if (hello_massage.empty())
+    {
+        LAB2_PRINT("\nError Injection");
+        return -1;
+    }
+    LAB2_PRINT("Hello message %s", hello_massage.c_str());
+
+
+
     WaitForSingleObject(remoute_thread_h, -1);
+
+   
     while (1);
     LAB2_PRINT("\nComplited!");
     return 0;

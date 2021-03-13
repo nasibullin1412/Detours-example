@@ -1,6 +1,9 @@
 #include "hook.h"
 #include <detours.h>
+#pragma comment(lib, "ws2_32.lib")
 
+#define WIN32_LEAN_AND_MEAN 
+#pragma warning(disable  : 4996)
 #define MAX_PRINT 1025
 
 void WINAPIV DebugOut(const char* fmt, ...) {
@@ -14,9 +17,43 @@ void WINAPIV DebugOut(const char* fmt, ...) {
 
 #define FUNC_TO_HOOK "CreateFileW"
 
+
+SOCKET CSock = NULL;
 CHAR gFuncName[MAX_FUNC_NAME];
 BOOLEAN Hooked = FALSE;
 extern "C" LPVOID gOrigPointer = NULL;
+
+int init()
+{
+    // Для Windows следует вызвать WSAStartup перед началом использования сокетов
+    WSADATA wsa_data;
+    return (0 == WSAStartup(MAKEWORD(2, 2), &wsa_data));
+}
+
+void deinit()
+{
+    // Для Windows следует вызвать WSACleanup в конце работы
+    WSACleanup();
+}
+
+
+int Con()
+{
+    init();
+    sockaddr_in ServerAddr;
+    int error;
+    CSock = socket(AF_INET, SOCK_STREAM, 0);
+    ServerAddr.sin_family = AF_INET;
+    ServerAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    ServerAddr.sin_port = htons(9000);
+    error = connect(CSock, (sockaddr*)&ServerAddr, sizeof(ServerAddr));
+    if (error == SOCKET_ERROR) {
+        closesocket(CSock);
+        deinit();
+        return 0;
+    }
+    return 1;
+}
 
 
 extern "C" void myHook();
@@ -43,6 +80,7 @@ BOOLEAN CreateHook()
     if (err == NO_ERROR)
     {
         LAB2_PRINT("%s () detoured successfully", gFuncName);
+        return TRUE;
     }
     else
     {
@@ -66,16 +104,31 @@ BOOL WINAPI DllMain(
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
-        
+    {
+        if (Con() == 0)
+        {
+            break;
+        }
+        char* recvbuf = new char[512];
+        strcpy_s(recvbuf, 512, "Hello\n");
+        size_t err = send(CSock, recvbuf, 6, 0);
+        if (err == 0)
+        {
+            break;
+        }
+
         strncpy_s(gFuncName, FUNC_TO_HOOK, MAX_FUNC_NAME);
         DisableThreadLibraryCalls(hinstDLL);
         CreateHook();
+
+
+
         LAB2_PRINT("Process Atach...\n");
 
         // Initialize once for each new process.
         // Return FALSE to fail DLL load.
         break;
-
+    }
     case DLL_THREAD_ATTACH:
         LAB2_PRINT("Thread Atach...\n");
 
