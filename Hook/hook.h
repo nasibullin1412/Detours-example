@@ -3,6 +3,7 @@
 
 #include <share.h>
 #define MAX_FUNC_NAME 1024
+#define MAX_RECSV 512
 #define DLL_TO_HOOK TEXT("kernel32.dll")
 
 

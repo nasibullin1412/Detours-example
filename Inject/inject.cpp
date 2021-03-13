@@ -65,7 +65,7 @@ HANDLE InjectDllIntoProccess(DWORD procId, LPCWSTR dllName)
     processHandel = OpenProcess(PROCESS_ALL_ACCESS, false, procId);
     dll_name = VirtualAllocEx(processHandel, NULL, MAX_PATH*sizeof(TCHAR), MEM_COMMIT, PAGE_READWRITE);
     if (WriteProcessMemory(processHandel, dll_name, dllName,(lstrlen(dllName)+1)*sizeof(TCHAR), &dwWritten) == 0) {
-        LAB2_PRINT("WriteProcessMemory error", GetLastError());
+        LAB2_PRINT("WriteProcessMemory error 0x%x", GetLastError());
         return NULL;
     }
 
@@ -136,7 +136,7 @@ DWORD GetProcIdPrep(const
     procId = getProcessID(w_proc_name);
     if (procId == 0)
     {
-        LAB2_PRINT("\n[Error]: Unable to find process %s", proc_name);
+        LAB2_PRINT("\n[Error]: Unable to find process %s", proc_name.c_str());
         return 0;
     }
     return procId;
@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
     std::string proc_name;
     std::string proc_pid;
     std::string hide_file;
-    std::string hide_func;
+    std::string hook_func;
 
 
 
@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        hide_func = temp;
+        hook_func = temp;
     }
 
     temp.clear();
@@ -211,7 +211,6 @@ int main(int argc, char* argv[])
 
 
     LAB2_PRINT("\nStarting...");
-    //LPCTSTR proc_name = TEXT("notepad.exe");
     DWORD p_id = 0;
     TCHAR full_dll_path[MAX_PATH];
     LPCTSTR dll_name = TEXT("Hook.dll");
@@ -249,17 +248,38 @@ int main(int argc, char* argv[])
     std::string hello_massage = sock->ReceiveBytes();
     if (hello_massage.empty())
     {
-        LAB2_PRINT("\nError Injection");
+        LAB2_PRINT("\n[Error] Injection");
         return -1;
     }
-    LAB2_PRINT("Hello message %s", hello_massage.c_str());
+    LAB2_PRINT("\nHello message %s", hello_massage.c_str());
 
+    temp.clear();
+    std::string data;
+    if (hide_file.empty())
+    {
+        temp = "1";
+        data = hook_func;
+    }
+    else
+    {
+        temp = "2";
+        data = hide_file;
+    }
+    sock->SendLine(temp);
+    sock->SendLine(data);
 
 
     WaitForSingleObject(remoute_thread_h, -1);
 
    
-    while (1);
+   while (1) 
+   {
+        std::string r = sock->ReceiveLine();
+        if (r.empty()) break;
+        if (r[0] == '-') break;
+        LAB2_PRINT(" User message: %s\n", r.c_str());
+        r.clear();
+   }
     LAB2_PRINT("\nComplited!");
     return 0;
 }

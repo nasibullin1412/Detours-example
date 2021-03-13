@@ -21,6 +21,8 @@ void WINAPIV DebugOut(const char* fmt, ...) {
 SOCKET CSock = NULL;
 CHAR gFuncName[MAX_FUNC_NAME];
 BOOLEAN Hooked = FALSE;
+
+BOOLEAN Connect;
 extern "C" LPVOID gOrigPointer = NULL;
 
 int init()
@@ -34,6 +36,30 @@ void deinit()
 {
     // Для Windows следует вызвать WSACleanup в конце работы
     WSACleanup();
+}
+
+
+void sendMsg()
+{
+    if (Connect)
+    {
+        CHAR Msg[512] = { 0 };
+        SYSTEMTIME T;
+        char time[512] = { 0 };
+        GetLocalTime(&T);
+        char buf[512] = { 0 };
+        sprintf_s(buf, "Func: %s Date: %d:%d:%d- Time: %d:%d:%d:%d\n", gFuncName, T.wDay, T.wMonth, T.wYear, T.wHour, T.wMinute, T.wSecond, T.wMilliseconds);
+        send(CSock, buf, strlen(buf), 0);
+        Connect = FALSE;
+    }
+    /*if (time == NULL || strcmp(buf, time))
+    {
+        sprintf_s(time, "Date: %d:%d:%d Time: %d:%d:%d:%d\n", T.wDay, T.wMonth, T.wYear, T.wHour, T.wMinute, T.wSecond, T.wMilliseconds);
+        sprintf_s(Msg, "Func:%s . %s", gFuncName, time);
+        send(CSock, Msg, strlen(Msg), 0);
+    }*/
+
+    //send(CSock, "I'm here\n", 9, 0);
 }
 
 
@@ -89,10 +115,51 @@ BOOLEAN CreateHook()
     }
 }
 
+
+
+bool RecvMessage(char *recv_buf)
+{
+    size_t idx = 0;
+    while (1) {
+        char r;
+
+        switch (recv(CSock, &r, 1, 0))
+        {
+        case 0: // not connected anymore;
+                // ... but last line sent
+                // might not end in \n,
+                // so return ret anyway.
+            return FALSE;
+        case -1:
+        {
+            return FALSE;
+        }
+        }
+        if (idx == MAX_RECSV -1)
+        {
+            return FALSE;
+        }
+        if (r == '\n') 
+        {
+            recv_buf[idx] = '\0';
+            return TRUE;
+        }
+        else
+        {
+            recv_buf[idx] = r;
+            ++idx;
+        }
+    }
+
+}
+
+
 extern "C" VOID HookCallback()
 {
-    LAB2_PRINT("!%s () CALLED", gFuncName);
+    //LAB2_PRINT("!%s () CALLED", gFuncName);
     //OutputDebugStringA("() CALLED");
+    Connect = TRUE;
+    sendMsg();
 }
 
 BOOL WINAPI DllMain(
@@ -109,19 +176,38 @@ BOOL WINAPI DllMain(
         {
             break;
         }
-        char* recvbuf = new char[512];
+        char* recvbuf = new char[MAX_RECSV];
         strcpy_s(recvbuf, 512, "Hello\n");
         size_t err = send(CSock, recvbuf, 6, 0);
         if (err == 0)
         {
             break;
         }
+        
+        err = recv(CSock, recvbuf, 2, 0);
 
-        strncpy_s(gFuncName, FUNC_TO_HOOK, MAX_FUNC_NAME);
-        DisableThreadLibraryCalls(hinstDLL);
-        CreateHook();
+        if (err == 0)
+        {
+            break;
+        }
 
+        if (recvbuf[0] == '1')
+        {
+            if (RecvMessage(recvbuf))
+            {
+                strncpy_s(gFuncName, recvbuf, MAX_RECSV);
+                DisableThreadLibraryCalls(hinstDLL);
+                CreateHook();
+            }
+            else
+            {
+                break;
+            }
+        }
+        else
+        {
 
+        }
 
         LAB2_PRINT("Process Atach...\n");
 
