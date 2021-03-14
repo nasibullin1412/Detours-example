@@ -19,7 +19,7 @@ myHook PROC
     push r12
     push r13
     push r14
-    push r15 ;ќн пишет - стек в х64 д.б. выровнен по 16 перед Call и лучше зарезервировать еще. потом вставл€ет push и pop rax:
+    push r15 
     xor rax, rax
     push rax
     push rax

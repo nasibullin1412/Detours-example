@@ -7,5 +7,6 @@
   <ItemGroup>
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="hookasm.asm" />
+    <ClCompile Include="myfunc.cpp" />
   </ItemGroup>
 </Project>

