@@ -104,8 +104,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>IF not exist "$(SolutionDir)bin\$(Configuration)\" ( mkdir "$(SolutionDir)bin\$(Configuration)\" )
+copy "$(TargetPath)" "$(SolutionDir)bin\$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -126,8 +126,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>IF not exist "$(SolutionDir)bin\$(Configuration)\" ( mkdir "$(SolutionDir)bin\$(Configuration)\" )
+copy "$(TargetPath)" "$(SolutionDir)bin\$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -144,8 +144,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>IF not exist "$(SolutionDir)bin\$(Configuration)\" ( mkdir "$(SolutionDir)bin\$(Configuration)\" )
+copy "$(TargetPath)" "$(SolutionDir)bin\$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -166,8 +166,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>IF not exist "$(SolutionDir)bin\$(Configuration)\" ( mkdir "$(SolutionDir)bin\$(Configuration)\" )
+copy "$(TargetPath)" "$(SolutionDir)bin\$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

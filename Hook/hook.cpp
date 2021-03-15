@@ -162,6 +162,7 @@ BOOL WINAPI DllMain(
     {
     case DLL_PROCESS_ATTACH:
     {
+        setlocale(LC_ALL, "Rus");
         if (Con() == 0)
         {
             break;
