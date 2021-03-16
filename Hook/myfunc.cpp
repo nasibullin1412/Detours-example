@@ -11,12 +11,10 @@ HANDLE(WINAPI* pFindFirstFileExW) (LPCWSTR lpFileName, FINDEX_INFO_LEVELS fInfoL
 
 
 char full_name[MAX_RECSV] = { 0 };
-char path[MAX_RECSV] = { 0 };
-char name[MAX_RECSV] = { 0 };
+
 
 wchar_t w_full_name[MAX_RECSV] = { 0 };
-wchar_t w_path[MAX_RECSV] = { 0 };
-wchar_t w_name[MAX_RECSV] = { 0 };
+
 
 
 /*
