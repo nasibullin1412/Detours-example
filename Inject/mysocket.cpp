@@ -5,10 +5,13 @@ using namespace std;
 
 int Socket::nofSockets_ = 0;
 
-void Socket::Start() {
-    if (!nofSockets_) {
+void Socket::Start() 
+{
+    if (!nofSockets_) 
+    {
         WSADATA info;
-        if (WSAStartup(MAKEWORD(2, 0), &info)) {
+        if (WSAStartup(MAKEWORD(2, 0), &info))
+        {
             throw "Could not start WSA";
         }
     }
@@ -19,25 +22,30 @@ void Socket::End() {
     WSACleanup();
 }
 
-Socket::Socket() : s_(0) {
+Socket::Socket() : s_(0) 
+{
     Start();
     // UDP: use SOCK_DGRAM instead of SOCK_STREAM
     s_ = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (s_ == INVALID_SOCKET) {
+    if (s_ == INVALID_SOCKET)
+    {
         throw "INVALID_SOCKET";
     }
 
     refCounter_ = new int(1);
 }
 
-Socket::Socket(SOCKET s) : s_(s) {
+Socket::Socket(SOCKET s) : s_(s) 
+{
     Start();
     refCounter_ = new int(1);
 };
 
-Socket::~Socket() {
-    if (!--(*refCounter_)) {
+Socket::~Socket()
+{
+    if (!--(*refCounter_)) 
+    {
         Close();
         delete refCounter_;
     }
@@ -46,7 +54,8 @@ Socket::~Socket() {
     if (!nofSockets_) End();
 }
 
-Socket::Socket(const Socket& o) {
+Socket::Socket(const Socket& o) 
+{
     refCounter_ = o.refCounter_;
     (*refCounter_)++;
     s_ = o.s_;
@@ -54,7 +63,8 @@ Socket::Socket(const Socket& o) {
     nofSockets_++;
 }
 
-Socket& Socket::operator=(Socket& o) {
+Socket& Socket::operator=(Socket& o)
+{
     (*o.refCounter_)++;
 
     refCounter_ = o.refCounter_;
@@ -65,55 +75,25 @@ Socket& Socket::operator=(Socket& o) {
     return *this;
 }
 
-void Socket::Close() {
+void Socket::Close() 
+{
     closesocket(s_);
 }
 
-std::string Socket::ReceiveBytes() {
+
+std::string Socket::ReceiveLine() 
+{
     std::string ret;
-    char buf[1024];
-
-    while (1) {
-        u_long arg = 0;
-        if (ioctlsocket(s_, FIONREAD, &arg) != 0)
-            break;
-
-        if (arg == 0)
-            break;
-
-        if (arg > 1024) arg = 1024;
-
-        int rv = recv(s_, buf, arg, 0);
-        if (rv <= 0) break;
-
-        std::string t;
-
-        t.assign(buf, rv);
-        ret += t;
-    }
-
-    return ret;
-}
-
-std::string Socket::ReceiveLine() {
-    std::string ret;
-    while (1) {
+    while (1) 
+    {
         char r;
 
-        switch (recv(s_, &r, 1, 0)) {
-        case 0: // not connected anymore;
-                // ... but last line sent
-                // might not end in \n,
-                // so return ret anyway.
+        switch (recv(s_, &r, 1, 0)) 
+        {
+        case 0: 
             return ret;
         case -1:
             return "-1";
-            //      if (errno == EAGAIN) {
-            //        return ret;
-            //      } else {
-            //      // not connected anymore
-            //      return "";
-            //      }
         }
 
         ret += r;
@@ -121,16 +101,16 @@ std::string Socket::ReceiveLine() {
     }
 }
 
-void Socket::SendLine(std::string s) {
+void Socket::SendLine(std::string s) 
+{
     s += '\n';
-    send(s_, s.c_str(), s.length(), 0);
+    send(s_, s.c_str(), static_cast<int>(s.length()), 0);
 }
 
-void Socket::SendBytes(const std::string& s) {
-    send(s_, s.c_str(), s.length(), 0);
-}
 
-SocketServer::SocketServer(int port, int connections, TypeSocket type) {
+
+SocketServer::SocketServer(int port, int connections, TypeSocket type) 
+{
     sockaddr_in sa;
 
     memset(&sa, 0, sizeof(sa));
@@ -138,17 +118,20 @@ SocketServer::SocketServer(int port, int connections, TypeSocket type) {
     sa.sin_family = PF_INET;
     sa.sin_port = htons(port);
     s_ = socket(AF_INET, SOCK_STREAM, 0);
-    if (s_ == INVALID_SOCKET) {
+    if (s_ == INVALID_SOCKET) 
+    {
         throw "INVALID_SOCKET";
     }
 
-    if (type == NonBlockingSocket) {
+    if (type == NonBlockingSocket) 
+    {
         u_long arg = 1;
         ioctlsocket(s_, FIONBIO, &arg);
     }
 
     /* bind the socket to the internet address */
-    if (bind(s_, (sockaddr*)&sa, sizeof(sockaddr_in)) == SOCKET_ERROR) {
+    if (bind(s_, (sockaddr*)&sa, sizeof(sockaddr_in)) == SOCKET_ERROR) 
+    {
         closesocket(s_);
         throw "INVALID_SOCKET";
     }
@@ -156,14 +139,18 @@ SocketServer::SocketServer(int port, int connections, TypeSocket type) {
     listen(s_, connections);
 }
 
-Socket* SocketServer::Accept() {
+Socket* SocketServer::Accept() 
+{
     SOCKET new_sock = accept(s_, 0, 0);
-    if (new_sock == INVALID_SOCKET) {
+    if (new_sock == INVALID_SOCKET) 
+    {
         int rc = WSAGetLastError();
-        if (rc == WSAEWOULDBLOCK) {
+        if (rc == WSAEWOULDBLOCK) 
+        {
             return 0; // non-blocking call, no request pending
         }
-        else {
+        else 
+        {
             throw "Invalid Socket";
         }
     }

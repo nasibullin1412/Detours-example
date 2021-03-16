@@ -27,14 +27,12 @@ extern "C" LPVOID gOrigPointer = NULL;
 
 int init()
 {
-    // Для Windows следует вызвать WSAStartup перед началом использования сокетов
     WSADATA wsa_data;
     return (0 == WSAStartup(MAKEWORD(2, 2), &wsa_data));
 }
 
 void deinit()
 {
-    // Для Windows следует вызвать WSACleanup в конце работы
     WSACleanup();
 }
 
@@ -48,7 +46,7 @@ void sendMsg()
     GetLocalTime(&T);
     char buf[512] = { 0 };
     sprintf_s(buf, "Func: %s Date: %d:%d:%d- Time: %d:%d:%d:%d\n", gFuncName, T.wDay, T.wMonth, T.wYear, T.wHour, T.wMinute, T.wSecond, T.wMilliseconds);
-    send(CSock, buf, strlen(buf), 0);
+    send(CSock, buf, (int)strlen(buf), 0);
 }
 
 
@@ -115,10 +113,7 @@ bool RecvMessage(char *recv_buf)
 
         switch (recv(CSock, &r, 1, 0))
         {
-        case 0: // not connected anymore;
-                // ... but last line sent
-                // might not end in \n,
-                // so return ret anyway.
+        case 0: 
             return FALSE;
         case -1:
         {
@@ -146,8 +141,7 @@ bool RecvMessage(char *recv_buf)
 
 extern "C" VOID HookCallback()
 {
-    //LAB2_PRINT("!%s () CALLED", gFuncName);
-    //OutputDebugStringA("() CALLED");
+
     Connect = TRUE;
     sendMsg();
 }

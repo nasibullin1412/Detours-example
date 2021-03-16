@@ -52,7 +52,7 @@ HANDLE InjectDllIntoProccess(DWORD procId, LPCWSTR dllName)
     HANDLE hThread = NULL;
 
     if (!OpenProcessToken(hCurrentProc, TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &hToken)) {
-       LAB2_PRINT("OpenProcessToken Error", GetLastError());
+       LAB2_PRINT("OpenProcessToken Error 0x%x", GetLastError());
        return NULL;
     }
     else {
@@ -64,8 +64,13 @@ HANDLE InjectDllIntoProccess(DWORD procId, LPCWSTR dllName)
 
     processHandel = OpenProcess(PROCESS_ALL_ACCESS, false, procId);
     dll_name = VirtualAllocEx(processHandel, NULL, MAX_PATH*sizeof(TCHAR), MEM_COMMIT, PAGE_READWRITE);
+    if (dll_name == NULL)
+    {
+        LAB2_PRINT("[Error] VirtualAllocEx 0x%x", GetLastError());
+        return NULL;
+    }
     if (WriteProcessMemory(processHandel, dll_name, dllName,(lstrlen(dllName)+1)*sizeof(TCHAR), &dwWritten) == 0) {
-        LAB2_PRINT("WriteProcessMemory error 0x%x", GetLastError());
+        LAB2_PRINT("[Error]: WriteProcessMemory error 0x%x", GetLastError());
         return NULL;
     }
 
@@ -77,7 +82,7 @@ HANDLE InjectDllIntoProccess(DWORD procId, LPCWSTR dllName)
 
     hThread = CreateRemoteThread(processHandel, NULL, 0, (LPTHREAD_START_ROUTINE)load_library_p, dll_name, 0, &ThreadID);
     if (hThread == NULL) {
-        LAB2_PRINT("\nError creating thread 0x%x!", GetLastError());
+        LAB2_PRINT("\n[Error]: creating thread 0x%x!", GetLastError());
         goto COMPLETE;
     }
 
@@ -91,7 +96,6 @@ COMPLETE:
 void usage()
 {
 	printf("\nInject.exe <target_proc>...");
-
 }
 
 
@@ -131,7 +135,7 @@ DWORD GetProcIdPrep(const
     wchar_t w_proc_name[myconst::max_length] = { 0 };
 
 
-    MultiByteToWideChar(CP_UTF8, 0, proc_name.c_str(), -1, w_proc_name, proc_name.capacity());
+    MultiByteToWideChar(CP_UTF8, 0, proc_name.c_str(), -1, w_proc_name, static_cast<int>(proc_name.capacity()));
 
     procId = getProcessID(w_proc_name);
     if (procId == 0)
@@ -245,7 +249,7 @@ int main(int argc, char* argv[])
 
     Socket* sock = in.Accept();
 
-    std::string hello_massage = sock->ReceiveBytes();
+    std::string hello_massage = sock->ReceiveLine();
     if (hello_massage.empty())
     {
         LAB2_PRINT("\n[Error] Injection");

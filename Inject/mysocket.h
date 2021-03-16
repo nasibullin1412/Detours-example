@@ -5,7 +5,7 @@
 #include <WinSock2.h>
 
 #pragma comment(lib, "ws2_32.lib")
-#pragma warning(disable  : 4996);
+#pragma warning(disable  : 4996)
 
 
 #include <string>
@@ -20,7 +20,6 @@ public:
     Socket& operator=(Socket&);
 
     std::string ReceiveLine();
-    std::string ReceiveBytes();
 
     void   Close();
 
@@ -28,10 +27,6 @@ public:
     // because SendLine modifes the std::string passed.
     void   SendLine(std::string);
 
-    // The parameter of SendBytes is a const reference
-    // because SendBytes does not modify the std::string passed 
-    // (in contrast to SendLine).
-    void   SendBytes(const std::string&);
 
 protected:
     friend class SocketServer;
