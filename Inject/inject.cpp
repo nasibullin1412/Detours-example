@@ -51,12 +51,15 @@ HANDLE InjectDllIntoProccess(DWORD procId, LPCWSTR dllName)
     DWORD ThreadID = 0;
     HANDLE hThread = NULL;
 
-    if (!OpenProcessToken(hCurrentProc, TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &hToken)) {
+    if (!OpenProcessToken(hCurrentProc, TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &hToken)) 
+    {
        LAB2_PRINT("OpenProcessToken Error 0x%x", GetLastError());
        return NULL;
     }
-    else {
-        if (!setPrivilege(hToken, SE_DEBUG_NAME, TRUE)) {
+    else
+    {
+        if (!setPrivilege(hToken, SE_DEBUG_NAME, TRUE)) 
+        {
             LAB2_PRINT("SetPrivlegesSE_DEBUG_NAME Error 0x%x!", GetLastError());
             return NULL;
         }
