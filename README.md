@@ -10,7 +10,8 @@
 1. –pid < Target_Process_PID> – целевой процесс выбирается по значению PID.
 2. –name <Target_Process_Name> – целевой процесс выбирается по имени.
 3. –func <Function_Name> – имя функции, вызов которой требуется отследить.
-4. –hide <File_Name> – имя файла, который надо скрыть от процесса.  
+4. –hide <File_Name> – имя файла, который надо скрыть от процесса.
+
 Возможные сценарии запуска программы:
 1. Inject.exe –pid 123 –func CreateFile
 2.	Inject.exe –name notepad.exe –func CreateFileW
