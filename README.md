@@ -1,7 +1,10 @@
 # Реализация техники Inject&Hook
 
 ## Компиляция проекта
-Решение успещно компилируется в Microsoft Visual Studio 2019 в Release и в Debug версии x64. Также можно скомпилировать в командной строке разработчика от Visual Studio 2019\n
-с помощью команд devenv LabSec.sln /build Debug и devenv LabSec.sln /build Release
+Решение успешно компилируется в Microsoft Visual Studio 2019 в Release и в Debug версии x64. Также можно скомпилировать в командной строке разработчика от Visual Studio 2019
+с помощью команд devenv LabSec.sln /build Debug и devenv LabSec.sln /build Release.
+## Запуск программы
+После успешной компиляции в директорию bin\Release или bin\Debug должны появится файлы Inject.exe и Hook.dll. Для успешного выполнения программы необходимо запустить cmd от имени администратора, после чего перейти в указанную выше директорию и запустить программу с необходимыми параметрами.
+
 
 
